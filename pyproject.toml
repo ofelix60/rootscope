@@ -1,0 +1,26 @@
+[project]
+license = "BSD-3-Clause"
+license-files = ["LICENSE"]
+name = "rootscope"
+version = "0.1.0"
+description = "Compute plant root traits from SLEAP root predictions with NumPy and pandas."
+readme = "README.md"
+authors = [
+    { name = "Oscar Felix", email = "68672681+ofelix60@users.noreply.github.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "sleap-io>=0.9.5",
+]
+
+[project.scripts]
+rootscope = "rootscope:main"
+
+[build-system]
+requires = ["uv_build>=0.12.9,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "sleap-roots>=0.1.4",
+]
