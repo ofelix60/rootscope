@@ -1761,7 +1761,7 @@ dev = [
     { name = "pandas-stubs", specifier = ">=3.1.0.261029" },
     { name = "pytest", specifier = ">=9.2.0" },
     { name = "ruff", specifier = ">=0.17.5" },
-    { name = "sleap-roots", specifier = ">=0.1.4" },
+    { name = "sleap-roots", specifier = "==0.1.4" },
 ]
 
 [[package]]
