@@ -17,3 +17,12 @@ def lateral_count(pts: np.ndarray) -> int:
     pts = np.array(pts, dtype=float)
 
     return pts.shape[0]
+
+
+# 4
+def primary_tip_pt_y(pts: np.ndarray) -> float:
+
+    pts = np.array(pts, dtype=float)
+    tip_pts = pts[-1, :]
+
+    return tip_pts[-1]
