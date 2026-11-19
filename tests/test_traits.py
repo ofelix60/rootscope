@@ -61,6 +61,10 @@ def test_primary_length(pts: np.ndarray, expected: float) -> None:
             [[0, 0], [0, 0], [0, 20], [0, 30], [0, 40], [0, 50]],
             np.nan,
         ),  # node 1 on top of the base: no direction (sleap-roots says 90)
+        (
+            [[0, 0], [np.nan, np.nan], [20, 0], [0, 30], [0, 40]],
+            90.0,
+        ),  # 5 nodes: (5 + 1) // 2 = 3, so node 2 is still in the proximal half
     ],
 )
 def test_primary_angle_proximal(pts: np.ndarray, expected: float) -> None:
@@ -104,6 +108,10 @@ def test_primary_angle_proximal(pts: np.ndarray, expected: float) -> None:
             [[0, 0], [0, 10], [0, 20], [0, 30], [0, 40], [0, 0]],
             np.nan,
         ),  # tip on top of the base: no direction (sleap-roots says 90)
+        (
+            [[0, 0], [0, 10], [20, 0], [np.nan, np.nan], [np.nan, np.nan]],
+            np.nan,
+        ),  # 5 nodes: the distal half is nodes 3-4 only, so node 2 is NOT used
     ],
 )
 def test_primary_angle_distal(pts: np.ndarray, expected: float) -> None:
