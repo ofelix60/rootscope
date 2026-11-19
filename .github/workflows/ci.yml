@@ -1,0 +1,56 @@
+# Lint, type-check and test on every push to main and every pull request.
+# Runs the same commands as locally, so "passes on my machine" means "passes in CI".
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch: # manual re-run from the Actions tab
+
+# Least privilege: this workflow only reads the repo.
+permissions:
+  contents: read
+
+# One run per branch: a new push cancels the run it replaces
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10 # a hung job shouldn't burn the 6-hour default
+
+    steps:
+      # Actions are pinned to full commit SHAs: a tag can be moved, a SHA can't.
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          enable-cache: true
+          cache-dependency-glob: "**/uv.lock" # new cache only when the lockfile changes
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Python
+        run: uv python install # version from .python-version
+
+      # --locked: fail if uv.lock is out of date with pyproject.toml,
+      # so CI installs exactly the versions that were tested locally.
+      - name: Install dependencies
+        run: uv sync --locked
+
+      # Cheapest checks first, so a failure shows up fast.
+      - name: Ruff lint
+        run: uv run ruff check .
+
+      - name: Ruff format check
+        run: uv run ruff format --check .
+
+      - name: Mypy
+        run: uv run mypy src tests
+
+      - name: Pytest
+        run: uv run pytest
