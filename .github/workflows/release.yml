@@ -1,0 +1,62 @@
+# Publish to TestPyPI when a version tag (v*) is pushed.
+# Uses trusted publishing (OIDC): TestPyPI trusts this workflow in this repo,
+# so no API token is stored anywhere.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  # The exact same lint, type and test checks as every push (ci.yml).
+  check:
+    uses: ./.github/workflows/ci.yml
+
+  publish:
+    needs: check
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment:
+      name: testpypi # must match the environment in TestPyPI's publisher settings
+      url: https://test.pypi.org/project/rootscope/
+    permissions:
+      contents: read
+      id-token: write # lets this job prove its identity to TestPyPI; only this job gets it
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+
+      # A version can only be uploaded once, so refuse a tag that doesn't
+      # match the version in pyproject.toml (e.g. tag v0.1.1 but version 0.1.0).
+      - name: Check tag matches version
+        run: |
+          version="$(uv version --short)"
+          if [ "${GITHUB_REF_NAME}" != "v${version}" ]; then
+            echo "::error::tag ${GITHUB_REF_NAME} does not match pyproject version ${version}"
+            exit 1
+          fi
+
+      - name: Build
+        run: uv build
+
+      # Install the built wheel in a clean environment, outside the repo, and
+      # use it: CI tests the source, this tests what actually gets uploaded.
+      - name: Smoke-test the wheel
+        run: |
+          d="$GITHUB_WORKSPACE/tests/data/canola_7do/919QDUH"
+          cd /tmp
+          uv run --no-project --with "$GITHUB_WORKSPACE"/dist/*.whl -- python -I -c "
+          import rootscope
+          df = rootscope.compute_traits('$d.primary.predictions.slp', '$d.lateral.predictions.slp')
+          assert df.shape == (72, 6), df.shape
+          print('wheel OK:', df.shape)"
+
+      - name: Publish to TestPyPI
+        run: uv publish --index testpypi --trusted-publishing always
