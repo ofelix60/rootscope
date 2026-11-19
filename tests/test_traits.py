@@ -1,7 +1,13 @@
 import numpy as np
 import pytest
 
-from rootscope.traits import lateral_count, primary_length, primary_tip_pt_y
+from rootscope.traits import (
+    lateral_count,
+    primary_angle_distal,
+    primary_angle_proximal,
+    primary_length,
+    primary_tip_pt_y,
+)
 
 
 @pytest.mark.parametrize(
@@ -18,6 +24,90 @@ from rootscope.traits import lateral_count, primary_length, primary_tip_pt_y
 # np.ndarray[tuple[Any, ...], np.dtype[Any]
 def test_primary_length(pts: np.ndarray, expected: float) -> None:
     result = primary_length(pts)
+
+    assert result == pytest.approx(expected, nan_ok=True)
+
+
+@pytest.mark.parametrize(
+    "pts, expected",
+    [
+        ([[0, 0], [0, 10], [0, 20], [0, 30], [0, 40], [0, 50]], 0.0),  # straight down
+        ([[0, 0], [10, 0], [20, 0], [30, 0], [40, 0], [50, 0]], 90.0),  # sideways right
+        (
+            [[0, 0], [-10, 0], [-20, 0], [0, 30], [0, 40], [0, 50]],
+            90.0,
+        ),  # sideways left: still 90
+        (
+            [[0, 0], [10, 10], [0, 20], [0, 30], [0, 40], [0, 50]],
+            45.0,
+        ),  # node 1 at a diagonal
+        (
+            [[0, 0], [np.nan, np.nan], [20, 0], [0, 30], [0, 40], [0, 50]],
+            90.0,
+        ),  # node 1 missing → node 2 used
+        (
+            [[0, 0], [np.nan, np.nan], [np.nan, np.nan], [0, 30], [0, 40], [0, 50]],
+            np.nan,
+        ),  # nodes 1 and 2 missing → NaN
+        (
+            [[np.nan, np.nan], [0, 10], [0, 20], [0, 30], [0, 40], [0, 50]],
+            np.nan,
+        ),  # base missing → NaN
+        (
+            [[0, 10], [0, 0], [0, 20], [0, 30], [0, 40], [0, 50]],
+            180.0,
+        ),  # node 1 above the base: pointing up
+        (
+            [[0, 0], [0, 0], [0, 20], [0, 30], [0, 40], [0, 50]],
+            np.nan,
+        ),  # node 1 on top of the base: no direction (sleap-roots says 90)
+    ],
+)
+def test_primary_angle_proximal(pts: np.ndarray, expected: float) -> None:
+    result = primary_angle_proximal(pts)
+
+    assert result == pytest.approx(expected, nan_ok=True)
+
+
+@pytest.mark.parametrize(
+    "pts, expected",
+    [
+        ([[0, 0], [0, 10], [0, 20], [0, 30], [0, 40], [0, 50]], 0.0),  # straight down
+        (
+            [[0, 0], [0, 10], [0, 20], [0, 30], [0, 40], [50, 50]],
+            45.0,
+        ),  # tip swings out
+        (
+            [[0, 0], [0, 10], [0, 20], [0, 30], [40, 0], [np.nan, np.nan]],
+            90.0,
+        ),  # tip missing → node 4 used
+        (
+            [
+                [0, 0],
+                [0, 10],
+                [0, 20],
+                [np.nan, np.nan],
+                [np.nan, np.nan],
+                [np.nan, np.nan],
+            ],
+            np.nan,
+        ),  # 3, 4, 5 missing → NaN
+        (
+            [[np.nan, np.nan], [0, 10], [0, 20], [0, 30], [0, 40], [0, 50]],
+            np.nan,
+        ),  # base missing → NaN
+        (
+            [[0, 50], [0, 40], [0, 30], [0, 20], [0, 10], [0, 0]],
+            180.0,
+        ),  # tip above the base: pointing up
+        (
+            [[0, 0], [0, 10], [0, 20], [0, 30], [0, 40], [0, 0]],
+            np.nan,
+        ),  # tip on top of the base: no direction (sleap-roots says 90)
+    ],
+)
+def test_primary_angle_distal(pts: np.ndarray, expected: float) -> None:
+    result = primary_angle_distal(pts)
 
     assert result == pytest.approx(expected, nan_ok=True)
 
@@ -50,10 +140,9 @@ def test_lateral_count(pts: np.ndarray, expected: int) -> None:
             np.nan,
         ),  # tip missing: NaN, NOT 10
         ([[0, 0], [0, 10], [5, 40]], 40.0),
-        ([[0, 0], [0, 10], [np.nan, np.nan]], np.nan),
     ],
 )
-def test_primary_tip_pt_y(pts: np.ndarray, expected: int) -> None:
+def test_primary_tip_pt_y(pts: np.ndarray, expected: float) -> None:
     result = primary_tip_pt_y(pts)
 
     assert result == pytest.approx(expected, nan_ok=True)
