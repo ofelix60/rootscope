@@ -2,7 +2,7 @@
 license = "BSD-3-Clause"
 license-files = ["LICENSE"]
 name = "rootscope"
-version = "0.1.0"
+version = "0.1.1"
 description = "Compute plant root traits from SLEAP root predictions with NumPy and pandas."
 readme = "README.md"
 authors = [
