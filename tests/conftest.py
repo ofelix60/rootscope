@@ -29,3 +29,13 @@ def soy_primary_slp() -> Path:
 @pytest.fixture
 def soy_lateral_slp() -> Path:
     return SOY_LATERAL_SLP
+
+
+@pytest.fixture(scope="module", params=["canola", "soy"])
+def plant_paths(request: pytest.FixtureRequest) -> tuple[str, Path, Path]:
+    """(series_name, primary_path, lateral_path) for each plant, one per param."""
+    pairs = {
+        "canola": ("919QDUH", CANOLA_PRIMARY_SLP, CANOLA_LATERAL_SLP),
+        "soy": ("6PR6AA22JK", SOY_PRIMARY_SLP, SOY_LATERAL_SLP),
+    }
+    return pairs[request.param]
