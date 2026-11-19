@@ -1,4 +1,4 @@
-"""Step 6: validate rootscope.compute_traits against sleap-roots.
+"""Validate rootscope.compute_traits against sleap-roots.
 
 For each plant, run sleap-roots' DicotPipeline and rootscope's compute_traits
 on the same two .slp files, line the results up by frame_idx, and check that

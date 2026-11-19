@@ -1,6 +1,6 @@
 """Tests for rootscope.io.load_frames.
 
-Expected shapes come from the FINDINGS in scratch/explore_slp.py (Day 2).
+Expected shapes and counts were measured from the canola and soy fixture files.
 """
 
 from collections import Counter
@@ -20,17 +20,18 @@ def test_primary_frame_0_shape(canola_primary_slp: Path) -> None:
 
 
 def test_primary_frame_66_is_split_root(canola_primary_slp: Path) -> None:
-    # frames 66-71: the one primary root comes back as 2 instances (Q6)
+    # frames 66-71: the one primary root comes back as 2 instances
     assert load_frames(canola_primary_slp)[66].shape == (2, 6, 2)
 
 
 def test_lateral_frame_0_count(canola_lateral_slp: Path) -> None:
-    # lateral frame 0: 5 instances, 3 nodes each (Q3, Q5)
+    # lateral frame 0: 5 instances, 3 nodes each
     assert load_frames(canola_lateral_slp)[0].shape == (5, 3, 2)
 
 
 def test_lateral_instance_distribution(canola_lateral_slp: Path) -> None:
-    # the full Q5 Counter: a checksum that the file parsed as characterised
+    # instances per frame across all 72 frames, as a check that the whole file
+    # was read, not just the first frame
     frames = load_frames(canola_lateral_slp)
     counts = Counter(arr.shape[0] for arr in frames.values())
     assert counts == {4: 44, 3: 12, 5: 11, 6: 5}

@@ -1,6 +1,6 @@
 """Tests for rootscope.pipeline.
 
-Expected canola numbers come from the FINDINGS in scratch/explore_slp.py.
+Expected canola numbers were measured from the canola fixture files.
 """
 
 from pathlib import Path

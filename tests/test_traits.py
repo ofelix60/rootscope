@@ -21,7 +21,6 @@ from rootscope.traits import (
         ([[0, 0], [3, 4]], 5),
     ],
 )
-# np.ndarray[tuple[Any, ...], np.dtype[Any]
 def test_primary_length(pts: np.ndarray, expected: float) -> None:
     result = primary_length(pts)
 
@@ -129,7 +128,7 @@ def test_primary_angle_distal(pts: np.ndarray, expected: float) -> None:
             np.full((2, 3, 2), np.nan),
             2,
         ),  # all-NaN roots still count (same as sleap-roots)
-        (np.empty((0, 3, 2)), 0),  # empty frame: YOUR choice (sleap-roots reports 1)
+        (np.empty((0, 3, 2)), 0),  # empty frame: deliberate, sleap-roots reports 1
     ],
 )
 def test_lateral_count(pts: np.ndarray, expected: int) -> None:
